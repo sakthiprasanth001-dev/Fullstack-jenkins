@@ -3,6 +3,12 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
+            }
+        }
+
         stage('Build Backend') {
             steps {
                 sh 'docker build -t backend-app ./backend'
@@ -15,13 +21,19 @@ pipeline {
             }
         }
 
-        stage('Run Containers') {
+        stage('Run Backend') {
             steps {
                 sh '''
                 docker stop backend || true
                 docker rm backend || true
                 docker run -d -p 5000:5000 --name backend backend-app
+                '''
+            }
+        }
 
+        stage('Run Frontend') {
+            steps {
+                sh '''
                 docker stop frontend || true
                 docker rm frontend || true
                 docker run -d -p 3000:3000 --name frontend frontend-app
