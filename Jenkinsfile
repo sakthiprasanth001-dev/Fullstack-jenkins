@@ -3,12 +3,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
-            }
-        }
-
         stage('Build Backend') {
             steps {
                 sh 'docker build -t backend-app ./backend'
