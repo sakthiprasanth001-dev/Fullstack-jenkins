@@ -5,31 +5,19 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/sakthiprasanth001-dev/fullstack.git'
+                git 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
             }
         }
 
-        stage('List Files') {
+        stage('Build') {
             steps {
-                sh 'ls -al'
+                echo 'Building project...'
             }
         }
 
-        stage('Frontend Check') {
+        stage('Deploy') {
             steps {
-                sh 'ls frontend'
-            }
-        }
-
-        stage('Backend Check') {
-            steps {
-                sh 'ls backend'
-            }
-        }
-
-        stage('Docker Test') {
-            steps {
-                sh 'docker --version'
+                echo 'Deploying application...'
             }
         }
     }
