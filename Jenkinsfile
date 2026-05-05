@@ -17,21 +17,15 @@ pipeline {
 
         stage('Run Backend') {
             steps {
-                sh '''
-                docker stop backend || true
-                docker rm backend || true
-                docker run -d -p 5000:5000 --name backend backend-app
-                '''
+                sh 'docker rm -f backend || true'
+                sh 'docker run -d -p 5000:5000 --name backend backend-app'
             }
         }
 
         stage('Run Frontend') {
             steps {
-                sh '''
-                docker stop frontend || true
-                docker rm frontend || true
-                docker run -d -p 3000:3000 --name frontend frontend-app
-                '''
+                sh 'docker rm -f frontend || true'
+                sh 'docker run -d -p 3000:3000 --name frontend frontend-app'
             }
         }
     }
