@@ -7,12 +7,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                git 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
