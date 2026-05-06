@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'nodejs'
+    }
+
     environment {
         SONARQUBE_SERVER = 'sonarqube'
     }
@@ -32,7 +36,7 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
