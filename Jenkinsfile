@@ -6,30 +6,38 @@ pipeline {
     }
 
     environment {
-        SONARQUBE_SERVER = 'sonarqube'
+        SONAR_PROJECT_KEY = 'fullstack-app'
+        SONAR_HOST_URL = 'http://52.66.247.88:9000'
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    script {
-                        def scannerHome = tool 'sonar-scanner'
-                        sh """
-                        ${scannerHome}/bin/sonar-scanner \
-                          -Dsonar.projectKey=fullstack-app \
-                          -Dsonar.sources=. \
-                          -Dsonar.host.url=$SONAR_HOST_URL \
-                          -Dsonar.login=$SONAR_AUTH_TOKEN
-                        """
-                    }
+                withSonarQubeEnv('sonarqube') {
+                    sh '''
+                    echo "Node Version:"
+                    node -v
+
+                    echo "NPM Version:"
+                    npm -v
+
+                    echo "Installing dependencies..."
+                    npm install || true
+
+                    echo "Running SonarQube Scan..."
+                    sonar-scanner \
+                      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=$SONAR_HOST_URL \
+                      -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
                 }
             }
         }
@@ -71,10 +79,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline Success'
+            echo '✅ Pipeline SUCCESS'
         }
         failure {
-            echo '❌ Pipeline Failed'
+            echo '❌ Pipeline FAILED'
         }
     }
 }
