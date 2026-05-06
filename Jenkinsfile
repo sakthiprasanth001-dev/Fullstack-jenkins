@@ -3,6 +3,8 @@ pipeline {
 
     tools {
         nodejs 'nodejs'
+        // sonar scanner tool name Jenkins la same ah irukanum
+        // example: sonar-scanner
     }
 
     environment {
@@ -21,23 +23,23 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh '''
-                    echo "Node Version:"
-                    node -v
+                    script {
+                        def scannerHome = tool 'sonar-scanner'
+                        sh """
+                        echo "Node Version:"
+                        node -v
 
-                    echo "NPM Version:"
-                    npm -v
+                        echo "NPM Version:"
+                        npm -v
 
-                    echo "Installing dependencies..."
-                    npm install || true
-
-                    echo "Running SonarQube Scan..."
-                    sonar-scanner \
-                      -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_AUTH_TOKEN
-                    '''
+                        echo "Run Sonar Scanner..."
+                        ${scannerHome}/bin/sonar-scanner \
+                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=${SONAR_HOST_URL} \
+                          -Dsonar.login=${SONAR_AUTH_TOKEN}
+                        """
+                    }
                 }
             }
         }
