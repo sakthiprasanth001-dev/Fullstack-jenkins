@@ -111,7 +111,7 @@ pipeline {
         success {
             echo "PIPELINE SUCCESS 🚀"
 
-            mail to: 'sakthiprsanth001@gmail.com',
+            mail to: 'sakthiprasanth001@gmail.com',
             subject: "SUCCESS: Fullstack Pipeline",
             body: "Build SUCCESS 🚀 with SonarQube + Nexus + Docker deploy"
         }
@@ -119,7 +119,7 @@ pipeline {
         failure {
             echo "PIPELINE FAILED ❌"
 
-            mail to: 'sakthiprsanth001@gmail.com',
+            mail to: 'sakthiprasanth001@gmail.com',
             subject: "FAILED: Fullstack Pipeline",
             body: "Check Jenkins logs ❌"
         }
