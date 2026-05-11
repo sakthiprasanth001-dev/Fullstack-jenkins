@@ -32,7 +32,7 @@ pipeline {
                         -Dsonar.projectKey=fullstack-app \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://52.66.247.88:9000 \
-                        -Dsonar.login=\$SONAR_TOKEN
+                        -Dsonar.login=$SONAR_TOKEN
                         """
                     }
                 }
@@ -61,19 +61,28 @@ pipeline {
 
         stage('Push Backend to Nexus') {
             steps {
-                sh """
-                docker tag backend-app ${NEXUS_URL}/${NEXUS_REPO}/backend-app:latest
-                docker push ${NEXUS_URL}/${NEXUS_REPO}/backend-app:latest
-                """
+                withCredentials([usernamePassword(credentialsId: 'nexus-login', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    sh """
+                    docker logout ${NEXUS_URL} || true
+                    echo $NEXUS_PASS | docker login ${NEXUS_URL} -u $NEXUS_USER --password-stdin
+
+                    docker tag backend-app ${NEXUS_URL}/${NEXUS_REPO}/backend-app:latest
+                    docker push ${NEXUS_URL}/${NEXUS_REPO}/backend-app:latest
+                    """
+                }
             }
         }
 
         stage('Push Frontend to Nexus') {
             steps {
-                sh """
-                docker tag frontend-app ${NEXUS_URL}/${NEXUS_REPO}/frontend-app:latest
-                docker push ${NEXUS_URL}/${NEXUS_REPO}/frontend-app:latest
-                """
+                withCredentials([usernamePassword(credentialsId: 'nexus-login', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    sh """
+                    echo $NEXUS_PASS | docker login ${NEXUS_URL} -u $NEXUS_USER --password-stdin
+
+                    docker tag frontend-app ${NEXUS_URL}/${NEXUS_REPO}/frontend-app:latest
+                    docker push ${NEXUS_URL}/${NEXUS_REPO}/frontend-app:latest
+                    """
+                }
             }
         }
 
@@ -103,16 +112,16 @@ pipeline {
             echo "PIPELINE SUCCESS 🚀"
 
             mail to: 'sakthiprsanth001@gmail.com',
-            subject: "SUCCESS: Fullstack CI/CD Pipeline",
-            body: "Build SUCCESS 🚀 SonarQube + Nexus + Docker deploy completed"
+            subject: "SUCCESS: Fullstack Pipeline",
+            body: "Build SUCCESS 🚀 with SonarQube + Nexus + Docker deploy"
         }
 
         failure {
             echo "PIPELINE FAILED ❌"
 
             mail to: 'sakthiprsanth001@gmail.com',
-            subject: "FAILED: Fullstack CI/CD Pipeline",
-            body: "Check Jenkins logs ❌ Something broke in pipeline"
+            subject: "FAILED: Fullstack Pipeline",
+            body: "Check Jenkins logs ❌"
         }
     }
 }
