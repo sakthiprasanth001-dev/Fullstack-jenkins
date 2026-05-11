@@ -1,7 +1,54 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs "nodejs"
+    }
+
+    environment {
+        SONAR_HOME = tool "sonar-scanner"
+    }
+
     stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                        echo "Node Version"
+                        node -v
+
+                        echo "NPM Version"
+                        npm -v
+
+                        echo "Starting Sonar Scan"
+
+                        ${SONAR_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=fullstack-app \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://52.66.247.88:9000 \
+                        -Dsonar.login=$SONAR_TOKEN
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
 
         stage('Build Backend') {
             steps {
@@ -32,11 +79,11 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline SUCCESS'
+            echo "PIPELINE SUCCESS 🚀"
         }
 
         failure {
-            echo 'Pipeline FAILED'
+            echo "PIPELINE FAILED ❌"
         }
     }
 }
