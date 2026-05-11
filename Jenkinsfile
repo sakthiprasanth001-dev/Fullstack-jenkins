@@ -1,30 +1,30 @@
 pipeline {
+
     agent any
 
     tools {
         nodejs 'nodejs'
-        // sonar scanner tool name Jenkins la same ah irukanum
-        // example: sonar-scanner
     }
 
     environment {
-        SONAR_PROJECT_KEY = 'fullstack-app'
-        SONAR_HOST_URL = 'http://52.66.247.88:9000'
+        SONAR_HOME = tool 'sonar-scanner'
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
+                git branch: 'main',
+                url: 'https://github.com/sakthiprasanth001-dev/Fullstack-jenkins.git'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
+
                     script {
-                        def scannerHome = tool 'sonar-scanner'
+
                         sh """
                         echo "Node Version:"
                         node -v
@@ -33,11 +33,12 @@ pipeline {
                         npm -v
 
                         echo "Run Sonar Scanner..."
-                        ${scannerHome}/bin/sonar-scanner \
-                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                          -Dsonar.sources=. \
-                          -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.login=${SONAR_AUTH_TOKEN}
+
+                        ${SONAR_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=fullstack-app \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://52.66.247.88:9000 \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN
                         """
                     }
                 }
@@ -46,7 +47,7 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -77,12 +78,31 @@ pipeline {
                 sh 'docker run -d -p 3000:3000 --name frontend frontend-app'
             }
         }
+
+        stage('Push To Nexus') {
+            steps {
+
+                script {
+
+                    sh 'docker tag backend-app 52.66.247.88:8082/backend-app:latest'
+                    sh 'docker tag frontend-app 52.66.247.88:8082/frontend-app:latest'
+
+                    docker.withRegistry('http://52.66.247.88:8082', 'nexus-login') {
+
+                        sh 'docker push 52.66.247.88:8082/backend-app:latest'
+                        sh 'docker push 52.66.247.88:8082/frontend-app:latest'
+                    }
+                }
+            }
+        }
     }
 
     post {
+
         success {
             echo '✅ Pipeline SUCCESS'
         }
+
         failure {
             echo '❌ Pipeline FAILED'
         }
